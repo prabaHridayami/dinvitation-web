@@ -1,5 +1,5 @@
 import React from "react";
-import { getEventBySlug } from "../api/event/route";
+import { getEventBySlug } from "../../lib/requests/event";
 import RsvpForm from "@/components/forms/RsvpForm";
 import Image from "next/image";
 import { Tangerine } from "next/font/google";
@@ -12,8 +12,8 @@ const tangerin = Tangerine({
 });
 
 type Props = {
-  params: { slug: string };
-  searchParams: { [key: string]: string | string[] | undefined };
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 const Page = async ({ params, searchParams }: Props) => {

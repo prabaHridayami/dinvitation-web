@@ -1,7 +1,7 @@
 import clientPromise from "@/lib/mongodb";
 import { Collection, Db } from "mongodb";
 
-export async function getEvents(): Promise<any[]> {
+export async function getEvents(): Promise<any | null> {
   const client = await clientPromise;
   const db: Db = client.db(process.env.DB_NAME || "dinvitation");
 

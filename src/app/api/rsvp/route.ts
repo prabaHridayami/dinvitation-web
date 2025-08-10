@@ -2,14 +2,6 @@ import clientPromise from "@/lib/mongodb";
 import { Db, Collection } from "mongodb";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function getPosts(): Promise<any[]> {
-  const client = await clientPromise;
-  const db: Db = client.db(process.env.DB_NAME || "dinvitation");
-
-  const posts: Collection = db.collection("events");
-  return posts.find().toArray();
-}
-
 export const POST = async (req: NextRequest) => {
   try {
     const body = await req.json();
