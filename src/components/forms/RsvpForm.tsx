@@ -1,6 +1,5 @@
 "use client";
-
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Form,
   FormControl,
@@ -17,7 +16,7 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { createRsvpApi, getRsvpApi, updateRsvpApi } from "@/api/rsvp";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 type Props = {
   eventId: string;
@@ -35,35 +34,67 @@ const FormSchema = z
     attending: z.string().refine((value) => value === "yes" || value === "no", {
       message: "Please select if you are attending",
     }),
-    companion: z.string().refine((value) => Number(value) >= 0, {
-      message: "Number of companions cannot be negative",
-    }),
+    companion: z.string(),
   })
-  .refine((data) => data.attending === "yes" || Number(data.companion) === 0, {
-    message: "If you are attending, you must provide a companion.",
+  .superRefine((data, ctx) => {
+    if (data.attending === "no" && Number(data.companion) > 0) {
+      ctx.addIssue({
+        path: ["companion"],
+        code: z.ZodIssueCode.custom,
+        message: "If you are not attending, you cannot have companions.",
+      });
+    }
   });
 
 const RsvpForm = ({ eventId, guest }: Props) => {
   const [submitted, setsubmitted] = useState(false);
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       eventId, // from props
       guest: String(guest) || "", // from props
       attending: "yes", // or 'yes'/'no' as appropriate
-      companion: 0 || "", // or another sensible default
+      companion: "0", // or another sensible default
     },
   });
 
-  const handleRsvp = async (data: z.infer<typeof FormSchema>) => {
-    const isRsvp = await getRsvpApi(data.eventId, data.guest);
-    console.log("isRsvp:", isRsvp);
-    if (isRsvp.success) {
+  const { data } = useQuery({
+    queryKey: ["rsvp", eventId, guest],
+    queryFn: async () => {
+      if (!eventId || !guest) return null;
+      const response = await getRsvpApi(eventId, String(guest));
+
+      return response;
+    },
+    enabled: !!eventId && !!guest,
+  });
+
+  useEffect(() => {
+    if (data && data.success) {
+      form.reset({
+        eventId: data.data.eventId,
+        guest: data.data.guest,
+        attending: data.data.isAttending ? "yes" : "no",
+        companion: String(data.data.numberOfCompanion || 0),
+      });
+    } else {
+      form.reset();
+    }
+  }, [data, form]);
+
+  const handleRsvp = async (params: z.infer<typeof FormSchema>) => {
+    params = {
+      ...params,
+      attending: "yes",
+      companion: params.attending === "yes" ? params.companion : "0",
+    };
+    if (data.success) {
       // If RSVP exists, update it
-      return await updateRsvpApi(data);
+      return await updateRsvpApi(params);
     } else {
       // If RSVP does not exist, create it
-      return await createRsvpApi(data);
+      return await createRsvpApi(params);
     }
   };
 
@@ -157,20 +188,20 @@ const RsvpForm = ({ eventId, guest }: Props) => {
           )}
         />
 
-        <Button
-          type="submit"
-          className="text-white transition-colors rounded-full bg-green-950 hover:bg-green-800"
-        >
-          Submit RSVP
-        </Button>
-
-        {submitted && (
+        {(submitted || data?.data) && (
           <p className="italic text-green-950">
             {form.getValues("attending") === "yes"
               ? "Thank you for confirming your attendance!"
               : "Thank you for your kind wishes!"}
           </p>
         )}
+
+        <Button
+          type="submit"
+          className="text-white transition-colors rounded-full bg-green-950 hover:bg-green-800"
+        >
+          Submit RSVP
+        </Button>
       </form>
     </Form>
   );
