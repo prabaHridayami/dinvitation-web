@@ -2,11 +2,16 @@ import React from "react";
 import { getEventBySlug } from "../../lib/requests/event";
 import RsvpForm from "@/components/forms/RsvpForm";
 import Image from "next/image";
-import { Parisienne } from "next/font/google";
+import { Parisienne, Quicksand } from "next/font/google";
 import { cn } from "@/lib/utils";
 
 const parisienne = Parisienne({
   variable: "--font-parisienne",
+  subsets: ["latin"],
+  weight: "400",
+});
+const quicksand = Quicksand({
+  variable: "--font-quicksand",
   subsets: ["latin"],
   weight: "400",
 });
@@ -27,8 +32,13 @@ const Page = async ({ params, searchParams }: Props) => {
   }
 
   return (
-    <div className="bg-[#fdfcf7]">
-      <div className={cn("container relative mx-auto p-4 xl:w-1/3")}>
+    <div className="bg-golden-light">
+      <div
+        className={cn(
+          quicksand.className,
+          "container relative mx-auto p-4 xl:w-1/3"
+        )}
+      >
         {/* Background frames */}
         <div className="absolute mb-8 top-0 left-0 right-0 h-[300px] lg:h-[500px] z-0 pointer-events-none">
           <Image src="/assets/top-frame.png" alt="top-frame" fill priority />
@@ -44,7 +54,7 @@ const Page = async ({ params, searchParams }: Props) => {
         </div>
 
         {/* Main content */}
-        <div className="relative z-10 p-8 py-20 space-y-10 text-center bg-transparent lg:p-20 xl:p-30">
+        <div className="relative z-10 p-6 py-20 space-y-10 text-center bg-transparent lg:p-20 xl:p-30">
           <div className="space-y-4">
             <h1 className="text-2xl italic">Dear,&nbsp;{guest}</h1>
             <h2 className="text-lg lg:text-xl">
@@ -53,9 +63,9 @@ const Page = async ({ params, searchParams }: Props) => {
           </div>
 
           <div
-            className={`${parisienne.className} relative text-5xl lg:text-7xl font-bold mb-4`}
+            className={`${parisienne.className} relative text-[44px] lg:text-6xl font-bold mb-4`}
           >
-            <h2 className="text-[#e4d8be] opacity-50 text-[120px] lg:text-[200px]">
+            <h2 className="text-[#e4d8be] opacity-50 text-[100px] lg:text-[200px]">
               &
             </h2>
             <h2 className="absolute top-0 left-0 right-0 text-green-950">
@@ -110,7 +120,9 @@ const Page = async ({ params, searchParams }: Props) => {
 
           <div>
             <p className="mb-3">Our Joint Bank Account Details</p>
-            <p>Account Name: P Vipassani & A Soto Lopez</p>
+            <p>
+              Account Name: P&nbsp;Vipassani&nbsp;&&nbsp;A&nbsp;Soto&nbsp;Lopez
+            </p>
             <p>Sort Code: 23-01-20</p>
             <p>Account Number: 14167362</p>
             <p>Bank: Revolut</p>
