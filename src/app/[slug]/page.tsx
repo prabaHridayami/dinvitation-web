@@ -2,13 +2,13 @@ import React from "react";
 import { getEventBySlug } from "../../lib/requests/event";
 import RsvpForm from "@/components/forms/RsvpForm";
 import Image from "next/image";
-import { Tangerine } from "next/font/google";
+import { Parisienne } from "next/font/google";
 import { cn } from "@/lib/utils";
 
-const tangerin = Tangerine({
-  variable: "--font-tangerine",
+const parisienne = Parisienne({
+  variable: "--font-parisienne",
   subsets: ["latin"],
-  weight: ["400", "700"],
+  weight: "400",
 });
 
 type Props = {
@@ -44,24 +44,24 @@ const Page = async ({ params, searchParams }: Props) => {
         </div>
 
         {/* Main content */}
-        <div className="relative z-10 bg-transparent p-8 py-20 lg:p-20 xl:p-30 text-center space-y-10">
+        <div className="relative z-10 p-8 py-20 space-y-10 text-center bg-transparent lg:p-20 xl:p-30">
           <div className="space-y-4">
-            <h1 className="text-2xl font-bold">Dear,&nbsp;{guest}</h1>
-            <h2 className="text-lg lg:text-2xl">
+            <h1 className="text-2xl italic">Dear,&nbsp;{guest}</h1>
+            <h2 className="text-lg lg:text-xl">
               You&apos;re Invited to the Wedding of
             </h2>
           </div>
 
           <div
-            className={`${tangerin.className} relative text-5xl lg:text-7xl font-bold mb-4`}
+            className={`${parisienne.className} relative text-5xl lg:text-7xl font-bold mb-4`}
           >
-            <h2 className="absolute top-0 right-0 left-0 text-[#0d3316] font-bold">
-              Alex Soto
-            </h2>
             <h2 className="text-[#e4d8be] opacity-50 text-[120px] lg:text-[200px]">
               &
             </h2>
-            <h2 className="absolute bottom-0 right-0 left-0 text-[#0d3316] font-bold">
+            <h2 className="absolute top-0 left-0 right-0 text-green-950">
+              Alex Soto
+            </h2>
+            <h2 className="absolute bottom-0 left-0 right-0 text-green-950">
               Prema Vipassani
             </h2>
           </div>
@@ -74,7 +74,7 @@ const Page = async ({ params, searchParams }: Props) => {
           <hr />
 
           <div>
-            <p className="font-bold text-xl">Wedding Ceremony</p>
+            <p className="text-lg font-bold">Wedding Ceremony</p>
             <p>📍 Edinburgh City Chambers</p>
             <p>253 High Street, Edinburgh EH1 1YJ</p>
             <p>🗓️ Saturday, 25th October 2025</p>
@@ -82,7 +82,7 @@ const Page = async ({ params, searchParams }: Props) => {
           </div>
 
           <div>
-            <p className="font-bold text-xl">Wedding Reception</p>
+            <p className="text-lg font-bold">Wedding Reception</p>
             <p>📍 Hotel Du Vin</p>
             <p>11 Bristo Place, Edinburgh EH1 1EZ</p>
             <p>🕤 11:00 AM – 7:00 PM</p>
@@ -91,8 +91,8 @@ const Page = async ({ params, searchParams }: Props) => {
           <hr />
 
           <p>
-            Your presence means the world to us, and is the greatest <br />
-            wedding gift we could ever ask for.
+            Your presence means the world to us, and is the greatest wedding
+            gift we could ever ask for.
           </p>
           <p>
             However, if giving is your way of showing love, a contribution
@@ -103,7 +103,9 @@ const Page = async ({ params, searchParams }: Props) => {
 
           <div>
             <p>With love,</p>
-            <p className={cn(tangerin.className, "text-4xl")}>Alex & Prema</p>
+            <p className={cn(parisienne.className, "text-4xl text-green-dark")}>
+              Alex & Prema
+            </p>
           </div>
 
           <div>
@@ -114,7 +116,7 @@ const Page = async ({ params, searchParams }: Props) => {
             <p>Bank: Revolut</p>
           </div>
 
-          <p>Kindly RSVP before 30th September 2025</p>
+          <p>Kindly RSVP before 30th&nbsp;September&nbsp;2025</p>
 
           <RsvpForm eventId={event._id} guest={guest} />
 

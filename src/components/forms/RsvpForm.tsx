@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Form,
   FormControl,
@@ -16,6 +16,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import { createRsvpApi, getRsvpApi, updateRsvpApi } from "@/api/rsvp";
+import { useMutation } from "@tanstack/react-query";
 
 type Props = {
   eventId: string;
@@ -24,43 +26,59 @@ type Props = {
 
 const FormSchema = z
   .object({
-    attending: z.enum(["yes", "no"], {
-      error: "Please confirm your attendance",
+    eventId: z.string().min(1, {
+      message: "Event ID is required",
     }),
-    companion: z.string().min(1, {
-      message: "Companion is required",
+    guest: z.string().min(1, {
+      message: "Guest name is required",
+    }),
+    attending: z.string().refine((value) => value === "yes" || value === "no", {
+      message: "Please select if you are attending",
+    }),
+    companion: z.string().refine((value) => Number(value) >= 0, {
+      message: "Number of companions cannot be negative",
     }),
   })
-  .refine((data) => data.attending === "yes" || data.companion === "", {
+  .refine((data) => data.attending === "yes" || Number(data.companion) === 0, {
     message: "If you are attending, you must provide a companion.",
   });
 
 const RsvpForm = ({ eventId, guest }: Props) => {
+  const [submitted, setsubmitted] = useState(false);
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
+    defaultValues: {
+      eventId, // from props
+      guest: String(guest) || "", // from props
+      attending: "yes", // or 'yes'/'no' as appropriate
+      companion: 0 || "", // or another sensible default
+    },
+  });
+
+  const handleRsvp = async (data: z.infer<typeof FormSchema>) => {
+    const isRsvp = await getRsvpApi(data.eventId, data.guest);
+    console.log("isRsvp:", isRsvp);
+    if (isRsvp.success) {
+      // If RSVP exists, update it
+      return await updateRsvpApi(data);
+    } else {
+      // If RSVP does not exist, create it
+      return await createRsvpApi(data);
+    }
+  };
+
+  const { mutate } = useMutation({
+    mutationFn: async (params: z.infer<typeof FormSchema>) => {
+      return handleRsvp(params);
+    },
+    onSuccess: () => {
+      setsubmitted(true);
+    },
   });
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
-    // event.preventDefault();
-    // Handle form submission logic here
-
-    console.log("Event ID:", eventId);
-    console.log("Guest:", guest);
-    // console.log("Form submitted", isAttending, numberOfCompanion);
-
-    // const res = await fetch("/api/rsvp", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({
-    //     eventId,
-    //     guest,
-    //     isAttending,
-    //     numberOfCompanion,
-    //   }),
-    // });
-
-    // const data = await res.json();
-    console.log(data);
+    console.log("Form submitted with data:", data);
+    mutate(data);
   };
 
   return (
@@ -99,6 +117,30 @@ const RsvpForm = ({ eventId, guest }: Props) => {
 
         <FormField
           control={form.control}
+          name="eventId"
+          render={() => (
+            <FormItem hidden>
+              <FormControl>
+                <Input type="text" hidden />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="guest"
+          render={() => (
+            <FormItem hidden>
+              <FormControl>
+                <Input type="text" hidden />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
           name="companion"
           render={({ field }) => (
             <FormItem className="text-left">
@@ -117,12 +159,18 @@ const RsvpForm = ({ eventId, guest }: Props) => {
 
         <Button
           type="submit"
-          onClick={() => {
-            console.log("test");
-          }}
+          className="text-white transition-colors rounded-full bg-green-950 hover:bg-green-800"
         >
-          Submit
+          Submit RSVP
         </Button>
+
+        {submitted && (
+          <p className="italic text-green-950">
+            {form.getValues("attending") === "yes"
+              ? "Thank you for confirming your attendance!"
+              : "Thank you for your kind wishes!"}
+          </p>
+        )}
       </form>
     </Form>
   );
